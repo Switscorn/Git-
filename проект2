@@ -1,38 +1,43 @@
-from PyQt6 import QtWidgets, uic
-from PyQt6.QtGui import QPainter, QColor
-from PyQt6.QtCore import Qt
+from PyQt6 import QtWidgets, QtGui, QtCore
 import random
 import sys
 
 
-class ShapeRenderer(QtWidgets.QMainWindow):
+class Ui_MainWindow:
+    def setupUi(self, MainWindow):
+        MainWindow.setFixedSize(400, 300)
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.button = QtWidgets.QPushButton(
+            "Добавить окружность", self.centralwidget)
+        self.button.setGeometry(140, 250, 120, 30)
+
+
+class CircleDrawer(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
-        uic.loadUi('UI.ui', self)
-        self.setFixedSize(400, 300)
-        self.circle_button = self.findChild(QtWidgets.QPushButton, 'pushButton')
-        self.circle_button.clicked.connect(self.create_circle)
-        self.circle_list = []
+        self.setupUi(self)
+        self.button.clicked.connect(self.add_circle)
+        self.circles = []
 
-    def create_circle(self):
-        self.circle_list.append(
-            (random.randint(0, 400), random.randint(0, 300), random.randint(20, 100)))
+    def add_circle(self):
+        color = QtGui.QColor(random.randint(
+            0, 255), random.randint(0, 255), random.randint(0, 255))
+        self.circles.append((random.randint(0, 300), random.randint(
+            0, 200), random.randint(20, 100), color))
         self.update()
 
     def paintEvent(self, event):
-        painter_instance = QPainter(self)
-        if not painter_instance.isActive():
-            painter_instance.begin(self)
-        painter_instance.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter_instance.setPen(Qt.PenStyle.NoPen)
-        painter_instance.setBrush(QColor(255, 255, 0))
-        for x_coord, y_coord, diameter in self.circle_list:
-            painter_instance.drawEllipse(x_coord, y_coord, diameter, diameter)
-        painter_instance.end()
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
+        for x, y, d, color in self.circles:
+            painter.setBrush(color)
+            painter.setPen(QtCore.Qt.PenStyle.NoPen)
+            painter.drawEllipse(x, y, d, d)
 
 
 if __name__ == "__main__":
-    application = QtWidgets.QApplication(sys.argv)
-    main_window = ShapeRenderer()
-    main_window.show()
-    sys.exit(application.exec())
+    app = QtWidgets.QApplication(sys.argv)
+    window = CircleDrawer()
+    window.show()
+    sys.exit(app.exec())
